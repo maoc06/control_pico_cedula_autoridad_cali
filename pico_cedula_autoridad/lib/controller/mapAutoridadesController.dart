@@ -9,4 +9,5 @@ class MapAutoridadesController extends ControllerMVC {
   getCenter() => MapAutoridadesModel.getCenter;
   handleClick(_value, _ctx) => MapAutoridadesModel.handleClick(_value, _ctx);
   getPolygons() => MapAutoridadesModel.getPolygons;
+  // listenChanges() => MapAutoridadesModel.listenChangeDB();
 }

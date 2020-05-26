@@ -12,7 +12,7 @@ import '../zipCodesCali.dart';
 class MapAutoridadesModel extends BloCSetting {
   static Completer<GoogleMapController> _controller;
 
-  static final Set<Marker> _markers = {};
+  static Set<Marker> _markers = {};
 
   static Set<Polygon> _polygons = HashSet<Polygon>();
 
@@ -20,11 +20,39 @@ class MapAutoridadesModel extends BloCSetting {
 
   BitmapDescriptor pinLocation;
 
+  listenChangeDB(state) {
+    CollectionReference reference =
+        Firestore.instance.collection('historyOffenders');
+    reference.snapshots().listen((querySnapshot) {
+      querySnapshot.documentChanges.forEach((change) async {
+        print("<><><><><><><><><><><><><><><><>");
+        print("<><><||CHANGE ON FIRESTORE||<><>");
+        print("<><><><><><><><><><><><><><><><>");
+
+        _controller = Completer();
+        _polygons = HashSet<Polygon>();
+        setInitSectors();
+        _markers = {};
+
+        paintMapAutoridades(state);
+
+        // setMarkersOnInfractorLocation(state);
+      });
+    });
+  }
+
   Future<void> setMarkersOnInfractorLocation(state) async {
     _controller = Completer();
     _polygons = HashSet<Polygon>();
     setInitSectors();
 
+    listenChangeDB(state);
+
+    paintMapAutoridades(state);
+    
+  }
+
+  paintMapAutoridades(state) async {
     QuerySnapshot querySnapshot =
         await Firestore.instance.collection('historyOffenders').getDocuments();
     for (int i = 0; i < querySnapshot.documents.length; i++) {
@@ -35,17 +63,14 @@ class MapAutoridadesModel extends BloCSetting {
           .get();
       users.then((DocumentSnapshot zipCodeCount) async {
         if (zipCodeCount.exists) {
-          var coordinatesMark = getCoordinates(zipCode.documentID);          
+          var coordinatesMark = getCoordinates(zipCode.documentID);
 
-          BitmapDescriptor bitmapDescriptor = await createCustomMarkerBitmap(zipCodeCount['cantidad'].toString());
-          _markers.add(
-            Marker(
+          BitmapDescriptor bitmapDescriptor = await createCustomMarkerBitmap(
+              zipCodeCount['cantidad'].toString());
+          _markers.add(Marker(
               markerId: MarkerId(zipCode.documentID),
               position: LatLng(coordinatesMark[0], coordinatesMark[1]),
-              icon: bitmapDescriptor
-            )
-          );
-          
+              icon: bitmapDescriptor));
 
           setSectors(zipCode.documentID, zipCodeCount['cantidad']);
           rebuildWidgets(setStates: () {}, states: [state]);
@@ -54,7 +79,7 @@ class MapAutoridadesModel extends BloCSetting {
     }
   }
 
-  static  getCoordinates(zipCode) {
+  static getCoordinates(zipCode) {
     var zipCoordinates = ZipCodesCali.zipCodesCoordinatesCali;
     zipCode = int.parse(zipCode);
     return zipCoordinates[zipCode];
@@ -82,8 +107,7 @@ class MapAutoridadesModel extends BloCSetting {
       return Color.fromRGBO(255, 252, 51, 0.3);
     } else if (cantidad >= 10 && cantidad < 20) {
       return Color.fromRGBO(255, 175, 51, 0.3);
-    }
-    else if(cantidad >= 20 && cantidad < 30) {
+    } else if (cantidad >= 20 && cantidad < 30) {
       return Color.fromRGBO(255, 51, 51, 0.3);
     }
     return Color.fromRGBO(255, 0, 0, 0.4);
@@ -148,12 +172,12 @@ class MapAutoridadesModel extends BloCSetting {
       strokeWidth: 1,
     ));
 
-    _polygons.add(Polygon(
-      polygonId: PolygonId('760010'),
-      points: ZipCodesCali.get760010(),
-      fillColor: setColorSector(0),
-      strokeWidth: 1,
-    ));
+    // _polygons.add(Polygon(
+    //   polygonId: PolygonId('760010'),
+    //   points: ZipCodesCali.get760010(),
+    //   fillColor: setColorSector(0),
+    //   strokeWidth: 1,
+    // ));
 
     _polygons.add(Polygon(
       polygonId: PolygonId('760013'),

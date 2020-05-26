@@ -27,6 +27,8 @@ class MapInfrantores extends StateMVC<MapAurtoridades> {
 
     setMarkers = MapAutoridadesModel();
     setMarkers.setMarkersOnInfractorLocation(this);
+    // setMa
+
     // setMarkers.setPolygons();
   }
   
